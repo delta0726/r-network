@@ -1,9 +1,8 @@
 # ***********************************************************************************************
-# Title     : Introduction to Network Analysis with R
-# Objective : TODO
-# Created by: Owner
-# Created on: 2021/03/05
-# URL       : https://www.jessesadler.com/post/network-analysis-with-r/
+# Title   : Introduction to Network Analysis with R
+# Create  : 2021/03/05
+# Update  : 2022/07/17
+# URL     : https://www.jessesadler.com/post/network-analysis-with-r/
 # ***********************************************************************************************
 
 
@@ -26,6 +25,7 @@
 
 # 0 準備 ---------------------------------------------------------------------
 
+# ライブラリ
 library(tidyverse)
 library(tidygraph)
 library(ggraph)
@@ -47,6 +47,7 @@ letters %>% glimpse()
 
 # ＜ポイント＞
 # - エッジとは2つの変数の関係性を示すデータ（1列目と2列目に同じカテゴリ値を持つ）
+#   --- tidygraphではedges/nodesの2つのテーブルでネットワークデータを扱う
 
 
 # データ作成
@@ -54,9 +55,11 @@ edge_list <- tibble(from = c(1, 2, 2, 3, 4), to = c(2, 3, 4, 2, 1))
 node_list <- tibble(id = 1:4)
 
 # エッジのイメージ
+# --- ノードとノードの間の辺
 edge_list %>% print()
 
 # ノードのイメージ
+# --- 点
 node_list %>% print()
 
 
