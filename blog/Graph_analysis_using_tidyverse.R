@@ -1,24 +1,25 @@
 # ***********************************************************************************************
-# Title     : Graph analysis using the tidyverse
-# Objective : TODO
-# Created by: Owner
-# Created on: 2021/02/22
-# URL       : https://rviews.rstudio.com/2019/03/06/intro-to-graph-analysis/
+# Title   : Graph analysis using the tidyverse
+# Create  : 2021/02/22
+# Update  : 2022/07/16
+# URL     : https://rviews.rstudio.com/2019/03/06/intro-to-graph-analysis/
 # ***********************************************************************************************
 
 
 # ＜ポイント＞
-# 1 グラフテーブルの作成とネットワーク描画を体験する
-# 2 ネットワーク分析を最短経路問題に当てはめる
+# 1 tidygraphの構造とパッケージが提供する2つの飛躍を理解する
+# 2 グラフテーブルの作成とネットワーク描画を体験する
+# 3 ネットワーク分析を最短経路問題に当てはめる
 
 
 # ＜目次＞
 # 0 準備
 # 1 グラフテーブルの作成
-# 2 グラフテーブルの加工
-# 3 ネットワーク描画
-# 4 最短経路の探索
-# 5 最短経路の探索 (プロセス集約)
+# 2 グラフテーブルの作成
+# 3 グラフテーブルの加工
+# 4 ネットワーク描画
+# 5 最短経路の探索
+# 6 最短経路の探索 (プロセス集約)
 
 
 # 0 準備 ------------------------------------------------------------------------------
@@ -32,7 +33,7 @@ library(ggraph)
 # データロード
 # --- 電車区間ごとの消費時間
 url <- "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-02-26/small_trains.csv"
-small_trains <- url %>% read_csv()
+small_trains <- read_csv(url)
 
 # データ確認
 small_trains %>% head()
@@ -42,25 +43,25 @@ small_trains %>% glimpse()
 thm <- theme_minimal() +
   theme(
     legend.position = "none",
-     axis.title = element_blank(),
-     axis.text = element_blank(),
-     panel.grid = element_blank(),
-     panel.grid.major = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    panel.grid = element_blank(),
+    panel.grid.major = element_blank(),
   )
 
 # テーマ設定
 theme_set(thm)
 
 
-
-# 1 グラフテーブルの作成 --------------------------------------------------------------------
+# 1 データ集計 ------------------------------------------------------------------------------
 
 # ＜ポイント＞
-# - A列とB列がネットワーク関係にあるデータセットを作成する
+# - ネットワーク分析を行うためノードに使う列の冗長性を排除する
+#   --- 今回は平均化することで平均所要時間を算出する
 
 
 # データ加工
-# --- 出発駅/到着駅ごとの所要時間
+# --- 出発駅/到着駅ごとの平均所要時間
 routes <-
   small_trains %>%
     group_by(departure_station, arrival_station) %>%
@@ -73,6 +74,15 @@ routes <-
 # 確認
 routes %>% print()
 
+
+# 2 グラフテーブルの作成 --------------------------------------------------------------------
+
+# ＜データ構造＞
+# - ルートテーブルを2つに分割してデータを管理する
+#   --- Node Data : fromとtoの項目名をインデックス化したもの
+#   --- Edge Data : 元のデータセットのfromとtoをインデックスに置換したもの
+
+
 # グラフテーブルに変換
 graph_routes <- routes %>% as_tbl_graph()
 
@@ -82,16 +92,25 @@ graph_routes %>% print()
 graph_routes %>% attributes()
 
 
+# 3 グラフテーブルの加工 --------------------------------------------------------------------
 
-# 2 グラフテーブルの加工 --------------------------------------------------------------------
+# ＜ポイント＞
+# - tidygraphでは、EdgeDataにノードまたはエッジに関する詳細情報を追加の列に添付できる
+#   --- activate()で操作する対象(nodes / edges)を予め選択しておく
+#   --- 列情報の追加はグラフ描画を見やすくするのに非常に役に立つ
+
+
+# データ選択
+graph_routes %>% activate(nodes)
+graph_routes %>% activate(edges)
 
 # ノードの加工
 # --- titleとlabelを追加
 graph_routes <-
   graph_routes %>%
-  activate(nodes) %>%
-  mutate(title = str_to_title(name),
-         label = str_replace_all(title, " ", "\n"))
+    activate(nodes) %>%
+    mutate(title = str_to_title(name),
+           label = str_replace_all(title, " ", "\n"))
 
 # ノードからタイトルを抽出
 stations <-
@@ -103,30 +122,32 @@ stations <-
 stations %>% print()
 
 
-
-# 3 ネットワーク描画 --------------------------------------------------------------------
+# 4 ネットワーク描画 --------------------------------------------------------------------
 
 # ネットワーク描画
 graph_routes %>%
   ggraph(layout = "kk") +
-    geom_node_point() +
-    geom_edge_diagonal()
+  geom_node_point() +
+  geom_edge_diagonal()
 
 # ネットワーク描画/装飾
 # --- ノードに名前を付ける
 # --- エッジを薄く表示
 graph_routes %>%
   ggraph(layout = "kk") +
-    geom_node_text(aes(label = label, color = name), size = 3) +
-    geom_edge_diagonal(color = "gray", alpha = 0.4)
+  geom_node_text(aes(label = label, color = name), size = 3) +
+  geom_edge_diagonal(color = "gray", alpha = 0.4)
 
 
+# 5 最短経路の探索 --------------------------------------------------------------------
 
-# 4 最短経路の探索 --------------------------------------------------------------------
+# ＜ポイント＞
+# - tidygraphではグラフアルゴリズムがどのように適用されているかを目視することができる
+
 
 # アイテムカウント
 from <- which(stations == "Arras")
-to <-  which(stations == "Nancy")
+to <- which(stations == "Nancy")
 
 # モーフ化
 # --- 最短経路を調べる
@@ -168,8 +189,8 @@ shortest %>% print()
 # --- アルファを調整して最短経路をフォーカス
 shortest %>%
   ggraph(layout = "kk") +
-    geom_edge_diagonal(aes(alpha = selected_edge), color = "gray") +
-    geom_node_text(aes(label = label, color =name, alpha = selected_node ), size = 3)
+  geom_edge_diagonal(aes(alpha = selected_edge), color = "gray") +
+  geom_node_text(aes(label = label, color = name, alpha = selected_node), size = 3)
 
 # 時間集計
 shortest %>%
@@ -180,11 +201,11 @@ shortest %>%
             total_time = round(sum(journey_time) / 60))
 
 
-# 5 最短経路の探索 (プロセス集約) ----------------------------------------------------------
+# 6 最短経路の探索 (プロセス集約) ----------------------------------------------------------
 
 # アイテムカウント
 from <- which(stations == "Montpellier")
-to <-  which(stations == "Laval")
+to <- which(stations == "Laval")
 
 # 最短経路の作成
 shortest <-
@@ -203,8 +224,8 @@ shortest <-
 # ネットワーク描画
 shortest %>%
   ggraph(layout = "kk") +
-    geom_edge_diagonal(aes(alpha = selected_edge), color = "gray") +
-    geom_node_text(aes(label = label, color =name, alpha = selected_node ), size = 3)
+  geom_edge_diagonal(aes(alpha = selected_edge), color = "gray") +
+  geom_node_text(aes(label = label, color = name, alpha = selected_node), size = 3)
 
 # 時間集計
 shortest %>%

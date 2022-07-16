@@ -1,9 +1,8 @@
 # ***********************************************************************************************
-# Title     : Rによるネットワーク分析をまとめました（ネットワークの指標編）
-# Objective : TODO
-# Created by: Owner
-# Created on: 2021/02/22
-# URL       : https://qiita.com/saltcooky/items/baefce3b6faceac2bf5c
+# Title   : Rによるネットワーク分析をまとめました（ネットワークの指標編）
+# Create  : 2021/02/22
+# Update  : 2022/07/16
+# URL     : https://qiita.com/saltcooky/items/baefce3b6faceac2bf5c
 # ***********************************************************************************************
 
 
