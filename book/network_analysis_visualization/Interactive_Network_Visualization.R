@@ -32,7 +32,8 @@ library(navdata)
 data("phone.call2")
 
 # データ確認
-# --- tidygraphのデータ（ノードとエッジのデータを持つ）
+# --- リストにノードとエッジのデータを格納している
+# --- tidygraphと同じ形式だが、こちらはリストに格納している点に注意
 phone.call2 %>% print()
 phone.call2 %>% class()
 phone.call2 %>% glimpse()

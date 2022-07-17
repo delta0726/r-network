@@ -34,7 +34,8 @@ library(corrr)
 data("phone.call2")
 
 # データ確認
-# --- tidygraphのデータ（ノードとエッジのデータを持つ）
+# --- リストにノードとエッジのデータを格納している
+# --- tidygraphと同じ形式だが、こちらはリストに格納している点に注意
 phone.call2 %>% print()
 phone.call2 %>% class()
 phone.call2 %>% glimpse()
@@ -44,7 +45,7 @@ nodes <- phone.call2$nodes
 edges <- phone.call2$edges
 
 # オブジェクトの作成
-# --- tidygraph用のデータ
+# --- tidygraphデータに変換
 phone.net <-
   tbl_graph(nodes = nodes, edges = edges, directed = TRUE)
 
@@ -100,6 +101,8 @@ cars.group <-
   tibble(name = rownames(mtcars),
          cyl = as.factor(mtcars$cyl))
 
+# データ確認
+cars.group %>% print()
 
 # Modify the nodes data
 cor.graph <-

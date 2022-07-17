@@ -53,6 +53,7 @@ set_graph_style(plot_margin = margin(1,1,1,1))
 # データ確認
 highschool %>% as_tibble()
 highschool %>% glimpse()
+highschool %>% map(table)
 
 # グラフテーブルに変換
 graph <- highschool %>% as_tbl_graph()
@@ -69,18 +70,16 @@ graph2 <- flare %$% tbl_graph(vertices, edges)
 graph2 %>% print()
 
 
-# highschoolデータ **************************************************************
-
-# データ確認
-highschool %>% as_tibble()
-highschool %>% glimpse()
-
 
 # 1 最初のネットワーク可視化 ------------------------------------------------------------------
 
+# ＜ポイント＞
+# - レイアウトの選択は、最終結果が伝達する内容に大きな影響を与える
+#   --- ユーザーの側で慎重に行う必要がある
+
+
 # ネットワーク作成
-# --- レイアウト指定：なし
-# --- すばやく起動して実行することのみを目的としている
+# --- レイアウト指定：なし（ggraphがautoでレイアウトを指定する）
 graph %>%
   ggraph() +
     geom_edge_link(aes(colour = factor(year))) +
